@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 import logging
 import azure.functions as func
 from azure.cosmos import CosmosClient
@@ -13,9 +14,9 @@ app = func.FunctionApp()
     connection="EventHubConnectionString"
 )
 def process_security_logs(azeventhub: func.EventHubEvent):
-    logging.info('Trigger processing event: %s', azeventhub.get_body().decode('utf-8'))
-    
     raw_body = azeventhub.get_body().decode('utf-8')
+    logging.info('Processing event: %s', raw_body)
+    
     
     try:
         log_data = json.loads(raw_body)
@@ -26,7 +27,7 @@ def process_security_logs(azeventhub: func.EventHubEvent):
     if log_data.get("severity") == "INFO":
         return
         
-    logging.info(f"Processing suspicious log: {log_data.get('event')}")
+    logging.info("Processing suspicious log: %s", log_data.get('event'))
     
     api_key = os.getenv("OpenAIApiKey")
     if not api_key or api_key == "<ENTER_YOUR_OPENAI_API_KEY_HERE>":
@@ -60,23 +61,23 @@ def process_security_logs(azeventhub: func.EventHubEvent):
         ai_response = json.loads(completion.choices[0].message.content)
         
     except Exception as e:
-        logging.error(f"OpenAI API error: {str(e)}")
+        logging.error("OpenAI API error: %s", e)
         return
 
     if ai_response.get("is_threat"):
-        logging.warning(f"Detected Threat: {ai_response.get('description')}")
+        logging.warning("Detected Threat: %s", ai_response.get('description'))
         store_alert_in_cosmos(ai_response, log_data)
     else:
         logging.info("Not a threat.")
 
 def store_alert_in_cosmos(ai_analysis, original_log):
     cosmos_conn_str = os.getenv("CosmosDbConnectionString")
-    db_name = "securitylogs"
-    container_name = "alerts"
-    
+    db_name = os.getenv("COSMOSDB_DATABASE_NAME", "securitylogs")
+    container_name = os.getenv("COSMOSDB_CONTAINER_NAME", "alerts")
+
     if not cosmos_conn_str or cosmos_conn_str == "<ENTER_YOUR_COSMOS_DB_CONNECTION_STRING_HERE>":
-         logging.error("CosmosDbConnectionString missing.")
-         return
+        logging.error("CosmosDbConnectionString missing.")
+        return
 
     try:
         client = CosmosClient.from_connection_string(cosmos_conn_str)
@@ -84,7 +85,7 @@ def store_alert_in_cosmos(ai_analysis, original_log):
         container = database.get_container_client(container_name)
         
         alert_document = {
-            "id": f"{original_log.get('server')}-{original_log.get('process_id')}",
+            "id": str(uuid.uuid4()),
             "timestamp": original_log.get("timestamp"),
             "server": original_log.get("server"),
             "ip": original_log.get("ip"),
@@ -93,9 +94,9 @@ def store_alert_in_cosmos(ai_analysis, original_log):
             "ai_description": ai_analysis.get("description"),
             "ai_recommended_action": ai_analysis.get("recommended_action")
         }
-        
+
         container.create_item(body=alert_document)
         logging.info("Alert written to Cosmos DB.")
-        
+
     except Exception as e:
-         logging.error(f"Cosmos DB Error: {str(e)}")
+        logging.error("Cosmos DB Error: %s", e)
