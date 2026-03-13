@@ -113,9 +113,10 @@ resource "azurerm_linux_function_app" "function" {
 data "azurerm_subscription" "primary" {}
 
 resource "azurerm_role_assignment" "eh_receiver" {
-  scope                = azurerm_eventhub_namespace.eh_ns.id
-  role_definition_name = "Azure Event Hubs Data Receiver"
-  principal_id         = azurerm_linux_function_app.function.identity[0].principal_id
+  scope                            = azurerm_eventhub_namespace.eh_ns.id
+  role_definition_name             = "Azure Event Hubs Data Receiver"
+  principal_id                     = azurerm_linux_function_app.function.identity[0].principal_id
+  skip_service_principal_aad_check = true
 }
 
 resource "azurerm_cosmosdb_sql_role_assignment" "cosmos_data_contributor" {
