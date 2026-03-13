@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
+    
+    "EventHubConnectionString": "<ENTER_YOUR_EVENT_HUB_CONNECTION_STRING_HERE>",
+    "CosmosDbConnectionString": "<ENTER_YOUR_COSMOS_DB_CONNECTION_STRING_HERE>",
+    "OpenAIApiKey": "<ENTER_YOUR_OPENAI_API_KEY_HERE>"
+  }
+}

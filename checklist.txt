@@ -1,0 +1,50 @@
+====================================================================
+PROJECT: AI SECURITY LOG ANALYZER - LEARNING & BUILD CHECKLIST
+====================================================================
+Goal: Build a high-throughput streaming AI pipeline, master Event Hubs, 
+and prove full-stack cloud ownership.
+
+--------------------------------------------------------------------
+[ ] PHASE 0: PRE-REQUISITES & WORKSPACE
+--------------------------------------------------------------------
+[ ] Install Terraform CLI, Azure CLI, and Azure Functions Core Tools.
+[ ] Set up a Python virtual environment (`python -m venv .venv`).
+[ ] Create a blank GitHub Repository.
+
+--------------------------------------------------------------------
+[ ] PHASE 1: TERRAFORM INFRASTRUCTURE
+--------------------------------------------------------------------
+[ ] Write `main.tf` with the Azure Provider block.
+[ ] Provision an Azure Resource Group.
+[ ] Provision an Azure Event Hubs Namespace and a single Event Hub.
+[ ] Provision an Azure Cosmos DB Core (SQL) API account.
+[ ] Provision a Storage Account and an Azure Function App.
+[ ] Run `terraform apply` and verify resources in the Azure Portal.
+
+--------------------------------------------------------------------
+[ ] PHASE 2: THE LOG GENERATOR SCRIPT
+--------------------------------------------------------------------
+[ ] Create a local python script: `log_generator.py`.
+[ ] Install the `azure-eventhub` Python SDK.
+[ ] Write code to generate 10-20 mock JSON logs (mix of normal traffic and "suspicious" events like repeated failed logins).
+[ ] Send the batch of logs to your Event Hub. 
+[ ] Verify in the Azure Portal metrics that the Event Hub is receiving messages.
+
+--------------------------------------------------------------------
+[ ] PHASE 3: THE AI PROCESSING FUNCTION
+--------------------------------------------------------------------
+[ ] Initialize a local Azure Function project.
+[ ] Create a new function using the "Azure Event Hub trigger" template.
+[ ] Configure the function's bindings to listen to your Event Hub.
+[ ] Add your AI provider's API key to `local.settings.json`.
+[ ] Write the Python logic to extract the log batch from the Event Hub trigger.
+[ ] Format the prompt and send the batch to the LLM API, requesting strict JSON output.
+[ ] Use the `azure-cosmos` SDK to insert any identified "threats" from the AI response into Cosmos DB.
+[ ] Run the Log Generator, watch the Function trigger, and verify the alerts appear in Cosmos DB.
+
+--------------------------------------------------------------------
+[ ] PHASE 4: CI/CD & REPOSITORY POLISH
+--------------------------------------------------------------------
+[ ] Write unit tests for your data parsing functions using `pytest`.
+[ ] Create a `.github/workflows/main.yml` file to automate testing on push.
+[ ] Write a comprehensive README.md. Detail how this architecture solves the problem of "alert fatigue" in IT operations by having an AI filter the noise.
