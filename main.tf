@@ -18,7 +18,7 @@ data "azurerm_resource_group" "rg" {
 
 resource "azurerm_eventhub_namespace" "eh_ns" {
   name                = var.eventhub_namespace_name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
   sku                 = "Standard"
   capacity            = 1
@@ -34,7 +34,7 @@ resource "azurerm_eventhub" "eh" {
 
 resource "azurerm_cosmosdb_account" "cosmos" {
   name                = var.cosmosdb_account_name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
   offer_type          = "Standard"
   kind                = "GlobalDocumentDB"
@@ -46,7 +46,7 @@ resource "azurerm_cosmosdb_account" "cosmos" {
   }
 
   geo_location {
-    location          = data.azurerm_resource_group.rg.location
+    location          = var.location
     failover_priority = 0
   }
 }
@@ -69,7 +69,7 @@ resource "azurerm_cosmosdb_sql_container" "container" {
 resource "azurerm_storage_account" "storage" {
   name                     = var.storage_account_name
   resource_group_name      = data.azurerm_resource_group.rg.name
-  location                 = data.azurerm_resource_group.rg.location
+  location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
@@ -77,7 +77,7 @@ resource "azurerm_storage_account" "storage" {
 resource "azurerm_service_plan" "asp" {
   name                = var.app_service_plan_name
   resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   os_type             = "Linux"
   sku_name            = "Y1"
 }
@@ -85,7 +85,7 @@ resource "azurerm_service_plan" "asp" {
 resource "azurerm_linux_function_app" "function" {
   name                       = var.function_app_name
   resource_group_name        = data.azurerm_resource_group.rg.name
-  location                   = data.azurerm_resource_group.rg.location
+  location                   = var.location
   storage_account_name       = azurerm_storage_account.storage.name
   storage_account_access_key = azurerm_storage_account.storage.primary_access_key
   service_plan_id            = azurerm_service_plan.asp.id
