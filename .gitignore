@@ -31,3 +31,7 @@ ENV/
 # Azure Functions
 .funcignore
 local.settings.json
+
+# Documentation
+*.md
+!README.md
