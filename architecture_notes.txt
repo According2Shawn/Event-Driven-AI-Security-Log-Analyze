@@ -1,0 +1,40 @@
+### 1. The Core Pattern: "Event-Driven Architecture"
+**What it is:** Instead of a system waking up every 5 minutes and asking "Do I have any new logs to check?" (Polling), the system sits completely idle until a log arrives and shouts "I'm here! Process me!" (Event-Driven).
+* **The "Why":** Security threats need to be identified in near real-time. If you check logs in batches every hour, a hacker has 59 minutes to steal data before you even notice. Event-driven architectures process data exactly as it happens.
+* **The "Why Not" (Batch Processing):** Batch processing is cheaper and easier if the data isn't time-sensitive (like generating a monthly billing report), but it fails for security monitoring.
+
+---
+
+### 2. The Ingestion Layer: Azure Event Hubs
+**What it is:** A massive "shock absorber" and data streaming platform.
+* **The "Why":** Imagine a DDoS attack hits your servers, generating 100,000 logs per second. If your log generator tried to send those directly to your Azure Function, the Function would crash from the overwhelming load. Event Hubs catches all 100,000 logs instantly, holds them safely in a buffer, and drips them to your Azure Function at a manageable speed. 
+* **The "Why Not" (Azure Service Bus):** Service Bus is great for high-value messages (like processing credit card transactions) where you need complex routing and absolute guarantees a message is processed exactly once. But for millions of security logs, Service Bus is too slow and too expensive. Event Hubs is built specifically for high-throughput "firehose" telemetry data.
+
+---
+
+### 3. The Processing Layer: Azure Functions
+**What it is:** "Serverless" compute. You just write the code; Microsoft handles the servers.
+* **The "Why":** **Cost and Auto-scaling.** An Azure Function scales from zero to thousands of instances automatically. If no logs are coming in, the Function turns off, and you pay $0.00. If a massive spike of logs hits the Event Hub, Azure automatically spins up 50 copies of your Python script to process them in parallel.
+* **The "Why Not" (Virtual Machines or Kubernetes):** If you used a Virtual Machine (VM), you would have to pay for it 24/7 even when no logs are happening. You would also have to manually patch the OS (Windows/Linux updates), manage SSH keys, and figure out how to clone the VM if traffic spiked. Azure Functions abstract all that IT headache away so you only focus on the logic.
+
+---
+
+### 4. The Language: Python
+**What it is:** The programming language used for our Log Generator and Azure Function.
+* **The "Why":** Python is the undisputed king of Data Science, Machine Learning, and AI. The libraries for interacting with LLMs (like the `openai` SDK) and manipulating data are first-class citizens in Python. It is also highly readable, making it the preferred scripting language for Security Analysts and Security Operations Center (SOC) teams.
+* **The "Why Not" (C# or Java):** While C# is native to Azure (Microsoft owns it) and runs incredibly fast, it requires much more "boilerplate" code to do simple things. Integrating AI APIs in Java or C# is often clunkier. Node.js is great for web servers, but lacks the robust AI/Data tooling of Python.
+
+---
+
+### 5. The Storage Layer: Azure Cosmos DB
+**What it is:** A globally distributed, NoSQL Document Database.
+* **The "Why":** Security logs and AI JSON responses do not have a strict shape. Tomorrow, you might decide to have the AI add a `"threat_score": 95` field. Because Cosmos DB is a **NoSQL document database**, it is "schema-less." You can just throw any valid JSON object at it, and it saves it. It is incredibly fast for both reading and writing JSON.
+* **The "Why Not" (Azure SQL Database):** SQL databases are rigid. If you want to add a `"threat_score"` field, you have to run a database migration to alter the table structure, which can cause downtime and headaches. Relational databases are better for things with strict relationships (like `Orders` tied to `Customers`), whereas independent log alerts belong in NoSQL.
+
+---
+
+### 6. The Infrastructure Layer: Terraform
+**What it is:** Infrastructure as Code (IaC).
+* **The "Why":** It allows you to treat your cloud architecture like software. You can version control it in Git, peer-review it, and destroy/rebuild exactly identical environments (Dev, QA, Prod) in minutes. Most importantly, Terraform is **cloud-agnostic**. Once you learn Terraform's syntax, you can use it to build AWS or Google Cloud architecture too.
+* **The "Why Not" (Clicking in the Azure Portal):** "ClickOps" leads to human error. If I ask you to rebuild this exact environment in 6 months using the portal, you will forget a checkbox. 
+* **The "Why Not" (ARM Templates / Bicep):** These are Microsoft's proprietary IaC languages. They are great, but if you learn them, you are locked into Azure. Terraform is the industry standard across all clouds.
